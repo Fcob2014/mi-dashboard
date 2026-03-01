@@ -384,6 +384,12 @@ function renderEmails() {
 function renderEvents() {
   const container = document.getElementById("eventList");
   buildCal(data.events.map(e=>e.day));
+  // Use server payment data if available
+  if (data.payments && data.payments.expenses && data.payments.expenses.length > 0) {
+    renderPay(data.payments.expenses);
+  } else {
+    renderPay(null);
+  }
   document.getElementById("statEvents").textContent = data.events.length;
   if (!data.events.length) { container.innerHTML = '<div class="empty-state">Sin eventos esta semana</div>'; return; }
   container.innerHTML = data.events.map(e => `
@@ -558,9 +564,18 @@ function filterPay(btn, f) {
   renderPay();
 }
 
-function renderPay() {
+function renderPay(serverExpenses) {
+  // Use server data from Gmail/Excel if available, otherwise use local PAGOS
+  var source = PAGOS;
+  if (serverExpenses && serverExpenses.length > 0) {
+    source = serverExpenses.map(function(e) {
+      return {n: e.label, a: e.amount||0, d: e.day||null, paid: e.paid||false};
+    });
+    var badge = document.getElementById('payBadge');
+    if (badge) badge.textContent = 'Datos del Excel ✓';
+  }
   var today = new Date();
-  var rows = PAGOS.map(function(p) {
+  var rows = source.map(function(p) {
     return {p:p, s:payStatus(p, today)};
   });
 
@@ -600,9 +615,8 @@ function renderPay() {
 // ── Init ──────────────────────────────────────────────
 buildCal([]);
 renderNotes();
+renderPay(null);
 loadData();
-renderPay();
 </script>
 </body>
 </html>
-
