@@ -1,32 +1,474 @@
-Francisco
-·
-Personal
-🔄
-Actualizar
-🙋 Personal
-🏢 Bosanet
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Francisco">
+<title>Francisco · Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#111214;--surface:#18191d;--surface2:#1f2025;
+    --border:#2b2c32;--text:#e8e9ec;--muted:#6b6e7a;--faint:#3a3b42;
+    --p:#d4a843;--p-glow:rgba(212,168,67,0.12);--p-badge:rgba(212,168,67,0.15);
+    --b:#4a9eff;--b-glow:rgba(74,158,255,0.12);--b-badge:rgba(74,158,255,0.15);
+    --green:#5cba8a;--red:#e06b6b;--orange:#e08c4a;--yellow:#f0c040;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:16px;min-height:100vh;}
+  body.personal{--accent:var(--p);--glow:var(--p-glow);--badge:var(--p-badge);}
+  body.bosanet {--accent:var(--b);--glow:var(--b-glow);--badge:var(--b-badge);}
 
-—
-NO LEÍDOS
-—
-EVENTOS SEMANA
-—
-TAREAS PENDIENTES
-✈️
-VUELO MAR 3 · LAX
-Hola, Francisco
-📧
-Gmail Personal
-fcob2014@gmail.com
-Cargando correos...
-📅
-Calendario
-Esta semana
+  header{padding:18px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+  .logo{font-family:'Playfair Display',serif;font-size:20px;display:flex;align-items:center;gap:8px;}
+  .logo-word{transition:color .3s;color:var(--accent);}
+  .header-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .tabs{display:flex;background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:3px;}
+  .tab{padding:7px 18px;border-radius:7px;font-size:14px;font-weight:500;cursor:pointer;transition:all .2s;color:var(--muted);border:none;background:none;font-family:inherit;}
+  .tab.active{background:var(--badge);color:var(--accent);box-shadow:0 0 0 1px color-mix(in srgb,var(--accent) 30%,transparent);}
+  .refresh-btn{display:flex;align-items:center;gap:6px;border:1px solid var(--border);border-radius:8px;padding:7px 14px;background:var(--surface);color:var(--muted);cursor:pointer;font-family:inherit;font-size:13px;transition:all .2s;}
+  .refresh-btn:hover{border-color:var(--text);color:var(--text);}
+  .refresh-btn:disabled{opacity:.5;cursor:default;}
+  .spin{display:inline-block;}
+  .spinning{animation:spin 1s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .date-pill{font-size:12px;color:var(--muted);background:var(--surface);border:1px solid var(--border);padding:5px 12px;border-radius:20px;letter-spacing:.05em;text-transform:uppercase;}
 
-Cargando eventos...
-📝
-Notas Personales
-— pendientes
+  .stats-bar{display:flex;align-items:center;border-bottom:1px solid var(--border);overflow-x:auto;padding:0 24px;}
+  .stat{padding:14px 22px;border-right:1px solid var(--border);flex-shrink:0;}
+  .stat:last-child{border-right:none;margin-left:auto;}
+  .stat-val{font-family:'Playfair Display',serif;font-size:26px;line-height:1;color:var(--accent);}
+  .stat-label{font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-top:3px;}
 
+  /* BRIEFING */
+  .briefing-bar{margin:16px 24px 0;background:#1a1c1f;border:1px solid color-mix(in srgb,var(--accent) 25%,transparent);border-radius:12px;padding:14px 18px;}
+  .briefing-label{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--accent);margin-bottom:6px;}
+  .briefing-text{font-size:15px;color:#c0c0cc;line-height:1.6;}
 
-+ Agregar
+  /* ALERTS */
+  .alerts-section{margin:14px 24px 0;display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:10px;}
+  .alert-card{border-radius:10px;padding:12px 16px;border:1px solid transparent;display:flex;gap:12px;align-items:flex-start;}
+  .alert-card.urgent  {background:rgba(224,107,107,.08);border-color:rgba(224,107,107,.25);}
+  .alert-card.warning {background:rgba(240,192,64,.08);border-color:rgba(240,192,64,.25);}
+  .alert-card.opportunity{background:rgba(92,186,138,.08);border-color:rgba(92,186,138,.25);}
+  .alert-card.reminder{background:rgba(74,158,255,.08);border-color:rgba(74,158,255,.25);}
+  .alert-icon{font-size:20px;flex-shrink:0;margin-top:1px;}
+  .alert-title{font-size:14px;font-weight:600;margin-bottom:3px;}
+  .alert-card.urgent   .alert-title{color:var(--red);}
+  .alert-card.warning  .alert-title{color:var(--yellow);}
+  .alert-card.opportunity .alert-title{color:var(--green);}
+  .alert-card.reminder .alert-title{color:var(--b);}
+  .alert-detail{font-size:13px;color:var(--muted);line-height:1.5;}
+
+  /* PRIORITIES */
+  .priorities-section{margin:14px 24px 0;}
+  .section-header{font-family:'Playfair Display',serif;font-size:16px;margin-bottom:10px;color:var(--accent);}
+  .priority-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:8px;}
+  .priority-item{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 16px;display:flex;gap:12px;align-items:flex-start;}
+  .priority-rank{font-family:'Playfair Display',serif;font-size:22px;line-height:1;color:var(--accent);flex-shrink:0;min-width:28px;}
+  .priority-task{font-size:14px;font-weight:600;margin-bottom:3px;}
+  .priority-reason{font-size:13px;color:var(--muted);line-height:1.4;}
+  .priority-cat{font-size:11px;padding:2px 8px;border-radius:8px;background:var(--badge);color:var(--accent);display:inline-block;margin-top:5px;}
+
+  /* MAIN GRID */
+  .grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;padding:16px 24px 32px;}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:13px;overflow:hidden;display:flex;flex-direction:column;}
+  .card-header{padding:14px 18px 11px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:9px;}
+  .card-icon{font-size:15px;width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;background:var(--glow);}
+  .card-title{font-family:'Playfair Display',serif;font-size:15px;}
+  .card-badge{margin-left:auto;font-size:12px;font-weight:600;padding:3px 9px;border-radius:10px;background:var(--badge);color:var(--accent);}
+
+  /* EMAIL */
+  .email-item{padding:11px 18px;border-bottom:1px solid rgba(255,255,255,.04);cursor:pointer;transition:background .15s;display:flex;align-items:flex-start;gap:10px;}
+  .email-item:hover{background:var(--surface2);}
+  .email-item:last-child{border-bottom:none;}
+  .dot{width:7px;height:7px;border-radius:50%;margin-top:6px;flex-shrink:0;}
+  .dot.unread{background:var(--accent);}
+  .dot.read{background:transparent;border:1px solid var(--faint);}
+  .email-from{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .email-subject{font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px;}
+  .email-action{font-size:12px;color:var(--accent);margin-top:3px;font-style:italic;}
+  .email-time{font-size:12px;color:var(--muted);flex-shrink:0;padding-left:8px;}
+  .priority-high .email-from{color:var(--red);}
+  .priority-medium .email-from{color:var(--yellow);}
+
+  /* CALENDAR */
+  .cal-mini{padding:12px 18px;border-bottom:1px solid var(--border);}
+  .cal-month{font-family:'Playfair Display',serif;font-size:13px;color:var(--muted);margin-bottom:8px;}
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center;}
+  .cal-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;padding:2px 0 4px;}
+  .cal-day{font-size:13px;padding:5px 0;border-radius:5px;color:var(--muted);}
+  .cal-day.today{background:var(--accent);color:#111;font-weight:700;}
+  .cal-day.has-event{color:var(--green);font-weight:600;}
+  .event-item{padding:11px 18px;border-bottom:1px solid rgba(255,255,255,.04);display:flex;gap:12px;align-items:center;cursor:pointer;transition:background .15s;}
+  .event-item:hover{background:var(--surface2);}
+  .event-item:last-child{border-bottom:none;}
+  .e-day-num{font-family:'Playfair Display',serif;font-size:22px;line-height:1;color:var(--accent);text-align:center;min-width:30px;}
+  .e-day-name{font-size:11px;color:var(--muted);text-transform:uppercase;text-align:center;}
+  .e-title{font-size:14px;font-weight:500;}
+  .e-time{font-size:12px;color:var(--muted);margin-top:2px;}
+  .e-pill{font-size:12px;padding:2px 9px;border-radius:10px;background:var(--glow);color:var(--accent);margin-left:auto;flex-shrink:0;}
+
+  /* NOTES */
+  .notes-scroll{flex:1;overflow-y:auto;padding:12px 18px 14px;max-height:420px;}
+  .notes-scroll::-webkit-scrollbar{width:3px;}
+  .notes-scroll::-webkit-scrollbar-thumb{background:var(--faint);border-radius:2px;}
+  .section-title{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--accent);margin-bottom:7px;padding-bottom:5px;border-bottom:1px solid var(--border);}
+  .note-section{margin-bottom:14px;}
+  .note-item{display:flex;align-items:flex-start;gap:9px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.04);cursor:pointer;}
+  .note-item:hover .note-text{color:var(--text);}
+  .note-check{width:15px;height:15px;border-radius:4px;flex-shrink:0;margin-top:2px;display:flex;align-items:center;justify-content:center;font-size:9px;}
+  .note-check.done{background:rgba(92,186,138,.15);border:none;color:var(--green);}
+  .note-check.pending{border:1px solid var(--faint);}
+  .note-text{font-size:14px;color:var(--muted);line-height:1.5;flex:1;transition:color .15s;}
+  .note-text.done{text-decoration:line-through;color:var(--faint);}
+  .note-tag{font-size:11px;padding:2px 7px;border-radius:8px;flex-shrink:0;margin-top:2px;}
+  .add-area{padding:10px 18px 14px;border-top:1px solid var(--border);}
+  .add-row{display:flex;gap:7px;}
+  .add-input{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:inherit;font-size:14px;padding:8px 12px;outline:none;transition:border-color .2s;}
+  .add-input:focus{border-color:var(--accent);}
+  .add-btn{border:none;border-radius:8px;padding:8px 14px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;background:var(--accent);color:#111;transition:opacity .15s;}
+  .add-btn:hover{opacity:.85;}
+
+  .loading-state{padding:22px;text-align:center;color:var(--muted);font-size:14px;font-style:italic;}
+  .empty-state{padding:18px;text-align:center;color:var(--muted);font-size:13px;font-style:italic;}
+
+  @media(max-width:900px){
+    .grid{grid-template-columns:1fr;padding:14px 16px 28px;}
+    .alerts-section{grid-template-columns:1fr;margin:12px 16px 0;}
+    .priority-list{grid-template-columns:1fr;}
+    .priorities-section{margin:12px 16px 0;}
+    header{padding:14px 16px;}
+    .stats-bar{padding:0 16px;}
+    .briefing-bar{margin:12px 16px 0;}
+  }
+</style>
+</head>
+<body class="personal">
+
+<header>
+  <div class="logo">
+    Francisco <span style="color:#3a3b42">·</span>
+    <span class="logo-word" id="logoWord">Personal</span>
+  </div>
+  <div class="header-right">
+    <button class="refresh-btn" id="refreshBtn" onclick="loadData()">
+      <span class="spin" id="spinIcon">🔄</span>
+      <span id="refreshLabel">Actualizar</span>
+    </button>
+    <div class="tabs">
+      <button class="tab active" id="tabP" onclick="switchPanel('personal')">🙋 Personal</button>
+      <button class="tab" id="tabB" onclick="switchPanel('bosanet')">🏢 Bosanet</button>
+    </div>
+    <div class="date-pill" id="datePill"></div>
+  </div>
+</header>
+
+<div class="stats-bar">
+  <div class="stat"><div class="stat-val" id="statUnread">—</div><div class="stat-label">No leídos</div></div>
+  <div class="stat"><div class="stat-val" id="statAlerts">—</div><div class="stat-label">Alertas</div></div>
+  <div class="stat"><div class="stat-val" id="statNotes">—</div><div class="stat-label">Pendientes</div></div>
+  <div class="stat"><div class="stat-val" id="statFlight">✈️</div><div class="stat-label" id="statFlightLabel">Vuelo Mar 3</div></div>
+  <div class="stat"><div style="font-family:'Playfair Display',serif;font-size:18px;font-style:italic;">Hola, <span style="color:var(--accent)">Francisco</span></div></div>
+</div>
+
+<!-- BRIEFING -->
+<div class="briefing-bar" id="briefingBar" style="display:none">
+  <div class="briefing-label">🧠 Briefing Ejecutivo del Día</div>
+  <div class="briefing-text" id="briefingText"></div>
+</div>
+
+<!-- ALERTS -->
+<div class="alerts-section" id="alertsSection"></div>
+
+<!-- PRIORITIES -->
+<div class="priorities-section" id="prioritiesSection" style="display:none">
+  <div class="section-header">🎯 Prioridades de Hoy</div>
+  <div class="priority-list" id="priorityList"></div>
+</div>
+
+<!-- GRID -->
+<div class="grid">
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon">📧</div>
+      <span class="card-title" id="emailTitle">Gmail Personal</span>
+      <div class="card-badge" id="emailAccount">fcob2014@gmail.com</div>
+    </div>
+    <div id="emailList"><div class="loading-state">Cargando correos...</div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon">📅</div>
+      <span class="card-title">Calendario</span>
+      <div class="card-badge" id="calBadge">Esta semana</div>
+    </div>
+    <div class="cal-mini">
+      <div class="cal-month" id="calMonth"></div>
+      <div class="cal-grid" id="calGrid"></div>
+    </div>
+    <div id="eventList"><div class="loading-state">Cargando eventos...</div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon">📝</div>
+      <span class="card-title" id="notesTitle">Notas Personales</span>
+      <div class="card-badge" id="notesBadge">— pendientes</div>
+    </div>
+    <div class="notes-scroll" id="notesList"></div>
+    <div class="add-area">
+      <div class="add-row">
+        <input class="add-input" id="noteInput" placeholder="Agregar tarea..." onkeydown="if(event.key==='Enter')addNote()">
+        <button class="add-btn" onclick="addNote()">+ Agregar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const PERSONAL_NOTES = [
+  {id:1,section:"Varios USA",text:"William Fodge",tag:"general",done:false},
+  {id:2,section:"Varios USA",text:"Revisar Seguro de la Casa",tag:"urgente",done:false},
+  {id:3,section:"Varios USA",text:"Revisar seguro de Geico",tag:"urgente",done:false},
+  {id:4,section:"Varios USA",text:"Finance Services Calentador",tag:"general",done:false},
+  {id:5,section:"Varios USA",text:"Score Mamá: Colchón",tag:"general",done:false},
+  {id:6,section:"Varios USA",text:"Hacer el Trust",tag:"urgente",done:false},
+  {id:7,section:"Personal",text:"Contabilidad Dubo",tag:"general",done:false},
+  {id:8,section:"Personal",text:"Cambia clave Apple",tag:"general",done:false},
+  {id:9,section:"Personal",text:"Llamar Experian",tag:"urgente",done:false},
+  {id:10,section:"Personal",text:"Cancelar Experian",tag:"urgente",done:false},
+  {id:11,section:"Pagos Score",text:"Pagar el Carro $20k",tag:"finance",done:false},
+  {id:12,section:"Pagos Score",text:"Pagar LNV Funding $9k",tag:"finance",done:false},
+  {id:13,section:"Trámites",text:"Ventanas Impacto 1-800-641-2754",tag:"general",done:false},
+  {id:14,section:"Trámites",text:"BOA – TC y Refinanciar carro",tag:"finance",done:false},
+  {id:15,section:"Trámites",text:"American Express 20 días 800-700-7619",tag:"urgente",done:false},
+  {id:16,section:"Trámites",text:"DIAN – Pagos Colombia",tag:"finance",done:false},
+];
+const BOSANET_NOTES = [
+  {id:100,section:"Estratégico",text:"Seguros para BosaPay",tag:"strategic",done:false},
+  {id:101,section:"Estratégico",text:"Contrato MX – revisar con abogado y visa",tag:"strategic",done:false},
+  {id:102,section:"Estratégico",text:"Landing Bosanet → BosaExpress",tag:"strategic",done:false},
+  {id:103,section:"Estratégico",text:"Acciones de Simón y Mariana",tag:"strategic",done:false},
+  {id:104,section:"Estratégico",text:"BosaPay – excepciones $30",tag:"urgente",done:false},
+  {id:105,section:"Estratégico",text:"Depositar todo en City National Bank",tag:"finance",done:false},
+  {id:106,section:"Estratégico",text:"Enviar presupuesto a cada área",tag:"general",done:false},
+  {id:107,section:"Marcas & Legal",text:"Registro Bosapay – buscar reunión",tag:"general",done:false},
+  {id:108,section:"Marcas & Legal",text:"Registro marca BI – rechazada",tag:"urgente",done:false},
+  {id:109,section:"Marcas & Legal",text:"Registro EU Trademarkia $3.000",tag:"finance",done:false},
+  {id:110,section:"Marcas & Legal",text:"Abogado Plataforma B2B USA",tag:"general",done:false},
+  {id:111,section:"Marcas & Legal",text:"Taxes Colombia",tag:"urgente",done:false},
+  {id:112,section:"Marcas & Legal",text:"Cobrar UNFI",tag:"finance",done:false},
+  {id:113,section:"Inversiones",text:"LUCIO: $15K",tag:"inversion",done:false},
+  {id:114,section:"Inversiones",text:"JUAN GOMEZ – cambiar SAFE al 2024",tag:"inversion",done:false},
+  {id:115,section:"Inversiones",text:"Preparar Due Diligence",tag:"inversion",done:false},
+  {id:116,section:"Inversiones",text:"Business Plan y presentación gerencial",tag:"inversion",done:false},
+  {id:117,section:"Inversiones",text:"SVB – responder",tag:"urgente",done:false},
+  {id:118,section:"Aliados",text:"Bancoldex",tag:"general",done:false},
+  {id:119,section:"Aliados",text:"Almuerzo: Landaeta Sysco",tag:"general",done:false},
+  {id:120,section:"Aliados",text:"Almuerzo: Sandra OEA",tag:"general",done:false},
+  {id:121,section:"Aliados",text:"Café: Danny",tag:"general",done:false},
+];
+const TAGS = {
+  urgente:  {bg:"rgba(224,107,107,.15)",color:"#e06b6b",label:"⚡ Urgente"},
+  strategic:{bg:"rgba(74,158,255,.12)", color:"#4a9eff",label:"🎯 Estratégico"},
+  finance:  {bg:"rgba(92,186,138,.12)", color:"#5cba8a",label:"💰 Finanzas"},
+  inversion:{bg:"rgba(224,140,74,.12)", color:"#e08c4a",label:"📈 Inversión"},
+  general:  {bg:"transparent",color:"#6b6e7a",label:""},
+};
+
+let panel = "personal";
+let apiData = {personalEmails:[],bosanetEmails:[],events:[],alerts:[],priorities:[],briefing:""};
+let pNotes = JSON.parse(localStorage.getItem("fx_pn")||"null") || PERSONAL_NOTES;
+let bNotes = JSON.parse(localStorage.getItem("fx_bn")||"null") || BOSANET_NOTES;
+
+// Date
+const WD=["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"],MN=["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
+const now=new Date();
+document.getElementById("datePill").textContent=`${WD[now.getDay()]}, ${now.getDate()} ${MN[now.getMonth()]} ${now.getFullYear()}`;
+
+function buildCal(eventDays) {
+  const grid=document.getElementById("calGrid");
+  const d=new Date();
+  document.getElementById("calMonth").textContent=`${MN[d.getMonth()]} ${d.getFullYear()}`;
+  grid.innerHTML="";
+  ["D","L","M","M","J","V","S"].forEach(l=>{const e=document.createElement("div");e.className="cal-label";e.textContent=l;grid.appendChild(e);});
+  const first=new Date(d.getFullYear(),d.getMonth(),1).getDay();
+  const days=new Date(d.getFullYear(),d.getMonth()+1,0).getDate();
+  for(let i=0;i<first;i++){const e=document.createElement("div");e.className="cal-day";grid.appendChild(e);}
+  for(let n=1;n<=days;n++){const e=document.createElement("div");e.className="cal-day"+(n===d.getDate()?" today":"")+(eventDays.includes(n)?" has-event":"");e.textContent=n;grid.appendChild(e);}
+}
+
+function switchPanel(p) {
+  panel=p;
+  document.body.className=p;
+  document.getElementById("logoWord").textContent=p==="personal"?"Personal":"Bosanet";
+  document.getElementById("tabP").className="tab"+(p==="personal"?" active":"");
+  document.getElementById("tabB").className="tab"+(p==="bosanet"?" active":"");
+  document.getElementById("emailTitle").textContent=p==="personal"?"Gmail Personal":"Outlook Bosanet";
+  document.getElementById("emailAccount").textContent=p==="personal"?"fcob2014@gmail.com":"fborrero@bosanet.com";
+  document.getElementById("notesTitle").textContent=p==="personal"?"Notas Personales":"Notas Bosanet";
+  document.getElementById("statFlight").textContent=p==="personal"?"✈️":"🌴";
+  document.getElementById("statFlightLabel").textContent=p==="personal"?"Vuelo Mar 3":"Expo West";
+  renderAll();
+}
+
+function renderEmails() {
+  const emails=panel==="personal"?apiData.personalEmails:apiData.bosanetEmails;
+  const c=document.getElementById("emailList");
+  document.getElementById("statUnread").textContent=emails.filter(e=>e.unread).length||"—";
+  if(!emails.length){c.innerHTML='<div class="empty-state">Sin correos recientes</div>';return;}
+  c.innerHTML=emails.map(e=>`
+    <div class="email-item priority-${e.priority||'low'}">
+      <div class="dot ${e.unread?'unread':'read'}"></div>
+      <div style="flex:1;min-width:0">
+        <div class="email-from">${e.from}</div>
+        <div class="email-subject">${e.subject}</div>
+        ${e.action?`<div class="email-action">→ ${e.action}</div>`:''}
+      </div>
+      <div class="email-time">${e.time}</div>
+    </div>`).join("");
+}
+
+function renderEvents() {
+  buildCal(apiData.events.map(e=>e.day));
+  const c=document.getElementById("eventList");
+  if(!apiData.events.length){c.innerHTML='<div class="empty-state">Sin eventos esta semana</div>';return;}
+  c.innerHTML=apiData.events.map(e=>`
+    <div class="event-item">
+      <div><div class="e-day-num">${e.day}</div><div class="e-day-name">${e.dayName}</div></div>
+      <div style="flex:1"><div class="e-title">${e.title}</div><div class="e-time">${e.time}</div></div>
+      <div class="e-pill">Viaje</div>
+    </div>`).join("");
+}
+
+function renderAlerts() {
+  const c=document.getElementById("alertsSection");
+  document.getElementById("statAlerts").textContent=apiData.alerts.length||"—";
+  if(!apiData.alerts.length){c.innerHTML="";return;}
+  c.innerHTML=apiData.alerts.map(a=>`
+    <div class="alert-card ${a.type}">
+      <div class="alert-icon">${a.icon}</div>
+      <div><div class="alert-title">${a.title}</div><div class="alert-detail">${a.detail}</div></div>
+    </div>`).join("");
+}
+
+function renderPriorities() {
+  const s=document.getElementById("prioritiesSection");
+  const l=document.getElementById("priorityList");
+  if(!apiData.priorities.length){s.style.display="none";return;}
+  s.style.display="block";
+  l.innerHTML=apiData.priorities.map(p=>`
+    <div class="priority-item">
+      <div class="priority-rank">${p.rank}</div>
+      <div>
+        <div class="priority-task">${p.task}</div>
+        <div class="priority-reason">${p.reason}</div>
+        <div class="priority-cat">${p.category}</div>
+      </div>
+    </div>`).join("");
+}
+
+function renderBriefing() {
+  const b=document.getElementById("briefingBar");
+  if(apiData.briefing){b.style.display="block";document.getElementById("briefingText").textContent=apiData.briefing;}
+  else b.style.display="none";
+}
+
+function renderNotes() {
+  const notes=panel==="personal"?pNotes:bNotes;
+  const pending=notes.filter(n=>!n.done).length;
+  document.getElementById("statNotes").textContent=pending;
+  document.getElementById("notesBadge").textContent=`${pending} pendientes`;
+  const sections={};
+  notes.forEach(n=>{if(!sections[n.section])sections[n.section]=[];sections[n.section].push(n);});
+  document.getElementById("notesList").innerHTML=Object.entries(sections).map(([sec,items])=>`
+    <div class="note-section">
+      <div class="section-title">${sec}</div>
+      ${items.map(n=>{const t=TAGS[n.tag];return`
+        <div class="note-item" onclick="toggleNote(${n.id})">
+          <div class="note-check ${n.done?'done':'pending'}">${n.done?'✓':''}</div>
+          <div class="note-text ${n.done?'done':''}">${n.text}</div>
+          ${t.label?`<div class="note-tag" style="background:${t.bg};color:${t.color}">${t.label}</div>`:''}
+        </div>`;}).join("")}
+    </div>`).join("");
+}
+
+function renderAll(){renderEmails();renderEvents();renderAlerts();renderPriorities();renderBriefing();renderNotes();}
+
+function toggleNote(id) {
+  if(panel==="personal"){pNotes=pNotes.map(n=>n.id===id?{...n,done:!n.done}:n);localStorage.setItem("fx_pn",JSON.stringify(pNotes));}
+  else{bNotes=bNotes.map(n=>n.id===id?{...n,done:!n.done}:n);localStorage.setItem("fx_bn",JSON.stringify(bNotes));}
+  renderNotes();
+}
+
+function addNote() {
+  const input=document.getElementById("noteInput");
+  const text=input.value.trim();if(!text)return;
+  const note={id:Date.now(),section:"Nuevas",text,tag:"general",done:false};
+  if(panel==="personal"){pNotes=[note,...pNotes];localStorage.setItem("fx_pn",JSON.stringify(pNotes));}
+  else{bNotes=[note,...bNotes];localStorage.setItem("fx_bn",JSON.stringify(bNotes));}
+  input.value="";renderNotes();
+}
+
+async function loadData() {
+  const btn=document.getElementById("refreshBtn");
+  const icon=document.getElementById("spinIcon");
+  const label=document.getElementById("refreshLabel");
+  btn.disabled=true;icon.classList.add("spinning");label.textContent="Analizando...";
+  try {
+    const res=await fetch("/.netlify/functions/data");
+    if(!res.ok)throw new Error("error");
+    const json=await res.json();
+    apiData={
+      personalEmails:json.personalEmails||[],
+      bosanetEmails:json.bosanetEmails||[],
+      events:json.events||[],
+      alerts:json.alerts||[],
+      priorities:json.priorities||[],
+      briefing:json.briefing||""
+    };
+  } catch {
+    apiData={
+      personalEmails:[
+        {from:"Google",subject:"Security alert – Claude Calendar",time:"1:10 PM",unread:true,priority:"low",action:"Sin acción requerida"},
+        {from:"The New York Times",subject:"The Morning Newsletter",time:"1:01 PM",unread:true,priority:"low",action:"Leer si tienes tiempo"},
+        {from:"Uber Receipts",subject:"Saturday evening trip – $67.43",time:"12:19 PM",unread:true,priority:"low",action:"Guardar para contabilidad"},
+        {from:"Vineyard Vines",subject:"You Will Love These Favorites",time:"7:17 AM",unread:false,priority:"low",action:""},
+      ],
+      bosanetEmails:[
+        {from:"Dusty Gilvin · Cantor",subject:"Quick Intro at Expo West",time:"1:21 PM",unread:true,priority:"high",action:"Responder antes del viaje – oportunidad Expo West"},
+        {from:"QuickBooks / Intuit",subject:"Line of Credit payment coming due",time:"1:21 PM",unread:false,priority:"high",action:"Verificar fecha de vencimiento y pagar"},
+      ],
+      events:[
+        {day:3,dayName:"Mar",title:"✈️ Flight to LAX (B6 2801)",time:"9:10 AM → 3:09 PM"},
+        {day:6,dayName:"Mar",title:"✈️ Flight to FLL (B6 700)",time:"6:00 PM → 10:48 PM"},
+      ],
+      alerts:[
+        {type:"urgent",icon:"🚨",title:"Vuelo LAX en 2 días",detail:"El martes 3 de Marzo sale a las 9:10 AM. Confirma check-in, hotel y agenda de Expo West."},
+        {type:"warning",icon:"⚠️",title:"Pago QuickBooks próximo",detail:"Line of Credit tiene pago venciendo. Revisar monto y fecha exacta en QuickBooks."},
+        {type:"opportunity",icon:"💡",title:"Intro Expo West – Cantor",detail:"Dusty Gilvin quiere hacer intro en Expo West. Responder hoy para coordinar reunión presencial."},
+        {type:"reminder",icon:"📋",title:"Score & Experian pendiente",detail:"Cancelar Experian y llamar para gestionar score antes del viaje."},
+      ],
+      priorities:[
+        {rank:1,task:"Responder email de Cantor – Expo West",reason:"Oportunidad de negocio en el evento en 2 días",category:"bosanet"},
+        {rank:2,task:"Check-in vuelo LAX B6 2801",reason:"Sale el martes 9:10 AM – check-in abre 24h antes",category:"personal"},
+        {rank:3,task:"Verificar pago QuickBooks Line of Credit",reason:"Puede afectar score crediticio si se vence",category:"finanzas"},
+        {rank:4,task:"Llamar Experian",reason:"Gestión de score es urgente para pagos pendientes",category:"personal"},
+        {rank:5,task:"American Express – llamar 800-700-7619",reason:"Plazo de 20 días en riesgo",category:"finanzas"},
+      ],
+      briefing:"Tienes vuelo a LAX en 2 días para Expo West – prioriza confirmar agenda y responder el email de Cantor hoy. Hay un pago de QuickBooks próximo a vencer que debes verificar. Tu score crediticio sigue siendo tema pendiente con Experian y los pagos del carro y LNV Funding. Recomiendo que hoy te enfoques en Expo West y los pagos urgentes antes de viajar."
+    };
+  }
+  renderAll();
+  const t=new Date();label.textContent=`${t.toLocaleTimeString("es",{hour:"2-digit",minute:"2-digit"})}`;
+  icon.classList.remove("spinning");btn.disabled=false;
+}
+
+buildCal([]);renderNotes();loadData();
+</script>
+</body>
+</html>
