@@ -124,6 +124,9 @@
   .summary-bar   { border:1px solid color-mix(in srgb,var(--accent) 25%,transparent); }
   .summary-label { color:var(--accent); }
 
+  /* Última actualización */
+  .last-update { font-size:10px; color:var(--muted); padding: 6px 16px 10px; font-style:italic; }
+
   @media(max-width:768px){
     .grid{grid-template-columns:1fr;padding:14px 16px 28px;}
     header{padding:14px 16px;}
@@ -205,6 +208,7 @@
       <div class="card-badge accent-badge" id="emailAccount">fcob2014@gmail.com</div>
     </div>
     <div id="emailList"><div class="loading-state">Cargando correos...</div></div>
+    <div class="last-update" id="emailLastUpdate"></div>
   </div>
 
   <!-- CALENDAR -->
@@ -264,7 +268,34 @@
 <script>
 // ── State ─────────────────────────────────────────────
 let panel = "personal";
-let data = { personalEmails:[], bosanetEmails:[], events:[], summary:"" };
+
+// ── EMAILS REALES (actualizados desde Claude) ─────────
+// Última actualización: Dom 8 Mar 2026 · 4:20 PM
+const REAL_EMAILS_PERSONAL = [
+  {from:"Apple",subject:"Tu cuenta Apple ha sido actualizada",time:"4:14 PM",unread:true,priority:"high"},
+  {from:"Isles at Weston Posts",subject:"Please help!",time:"2:50 PM",unread:true,priority:"medium"},
+  {from:"vineyard vines",subject:"Men's Styles For Every Spring Occasion",time:"2:11 PM",unread:true,priority:"low"},
+  {from:"NerdWallet",subject:"🏅 Calculate your car insurance costs",time:"2:00 PM",unread:true,priority:"low"},
+  {from:"AliExpress",subject:"Don't miss your chance for up to 50% OFF!",time:"9:50 AM",unread:true,priority:"low"},
+];
+
+const REAL_EMAILS_BOSANET = [
+  {from:"Alonso Arias · LinkedIn",subject:"You have an invitation — Montana Azul SA",time:"3:21 PM",unread:true,priority:"medium"},
+  {from:"Shepherd Tsomondo · LinkedIn",subject:"Shepherd just messaged you",time:"3:14 PM",unread:true,priority:"medium"},
+  {from:"Tony Robbins Spain",subject:"Últimos 3 días para entrenar con Tony Robbins",time:"3:03 PM",unread:true,priority:"low"},
+];
+
+const EMAIL_LAST_UPDATE = "Dom 8 Mar · 4:20 PM";
+
+let data = {
+  personalEmails: REAL_EMAILS_PERSONAL,
+  bosanetEmails:  REAL_EMAILS_BOSANET,
+  events: [
+    {day:3,dayName:"Mar",title:"✈️ Flight to LAX (B6 2801)",time:"9:10 AM → 3:09 PM"},
+    {day:6,dayName:"Mar",title:"✈️ Flight to FLL (B6 700)",time:"6:00 PM → 10:48 PM"},
+  ],
+  summary:""
+};
 
 const PERSONAL_NOTES = [
   {id:1,section:"Varios USA",text:"William Fodge",tag:"general",done:false},
@@ -274,7 +305,7 @@ const PERSONAL_NOTES = [
   {id:5,section:"Varios USA",text:"Score Mamá: Colchón",tag:"general",done:false},
   {id:6,section:"Varios USA",text:"Hacer el Trust",tag:"urgente",done:false},
   {id:7,section:"Personal",text:"Contabilidad Dubo",tag:"general",done:false},
-  {id:8,section:"Personal",text:"Cambia clave Apple",tag:"general",done:false},
+  {id:8,section:"Personal",text:"Cambia clave Apple",tag:"urgente",done:false},
   {id:9,section:"Personal",text:"Llamar Experian",tag:"urgente",done:false},
   {id:10,section:"Personal",text:"Cancelar Experian",tag:"urgente",done:false},
   {id:11,section:"Pagos Score",text:"Pagar el Carro $20k",tag:"finance",done:false},
@@ -318,8 +349,9 @@ const TAGS = {
   general:  {bg:"transparent",          color:"#6b6e7a", label:""},
 };
 
-let pNotes = JSON.parse(localStorage.getItem("fx_pn") || "null") || PERSONAL_NOTES;
-let bNotes = JSON.parse(localStorage.getItem("fx_bn") || "null") || BOSANET_NOTES;
+// Notas guardadas en memoria de sesión (no localStorage)
+let pNotes = [...PERSONAL_NOTES];
+let bNotes = [...BOSANET_NOTES];
 
 // ── Date ──────────────────────────────────────────────
 const WD=["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"],MN=["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
@@ -366,7 +398,13 @@ function switchPanel(p) {
 function renderEmails() {
   const emails = panel==="personal" ? data.personalEmails : data.bosanetEmails;
   const container = document.getElementById("emailList");
-  if (!emails.length) { container.innerHTML = '<div class="empty-state">Sin correos recientes</div>'; return; }
+  const lastUpdate = document.getElementById("emailLastUpdate");
+
+  if (!emails || !emails.length) {
+    container.innerHTML = '<div class="empty-state">Sin correos recientes</div>';
+    return;
+  }
+
   container.innerHTML = emails.map(e => `
     <div class="email-item">
       <div class="dot ${e.unread?'unread':'read'}"></div>
@@ -377,6 +415,8 @@ function renderEmails() {
       <div class="email-time">${e.time}</div>
     </div>
   `).join("");
+
+  if (lastUpdate) lastUpdate.textContent = `Actualizado: ${EMAIL_LAST_UPDATE}`;
   document.getElementById("statUnread").textContent = emails.filter(e=>e.unread).length;
 }
 
@@ -384,12 +424,7 @@ function renderEmails() {
 function renderEvents() {
   const container = document.getElementById("eventList");
   buildCal(data.events.map(e=>e.day));
-  // Use server payment data if available
-  if (data.payments && data.payments.expenses && data.payments.expenses.length > 0) {
-    renderPay(data.payments.expenses);
-  } else {
-    renderPay(null);
-  }
+  renderPay(null);
   document.getElementById("statEvents").textContent = data.events.length;
   if (!data.events.length) { container.innerHTML = '<div class="empty-state">Sin eventos esta semana</div>'; return; }
   container.innerHTML = data.events.map(e => `
@@ -419,7 +454,7 @@ function renderNotes() {
     <div class="note-section">
       <div class="section-title">${sec}</div>
       ${items.map(n => {
-        const t = TAGS[n.tag];
+        const t = TAGS[n.tag] || TAGS.general;
         return `<div class="note-item" onclick="toggleNote(${n.id})">
           <div class="note-check ${n.done?'done':'pending'}">${n.done?'✓':''}</div>
           <div class="note-text ${n.done?'done':''}">${n.text}</div>
@@ -436,10 +471,8 @@ function renderAll() { renderEmails(); renderEvents(); renderNotes(); }
 function toggleNote(id) {
   if (panel==="personal") {
     pNotes = pNotes.map(n => n.id===id ? {...n,done:!n.done} : n);
-    localStorage.setItem("fx_pn", JSON.stringify(pNotes));
   } else {
     bNotes = bNotes.map(n => n.id===id ? {...n,done:!n.done} : n);
-    localStorage.setItem("fx_bn", JSON.stringify(bNotes));
   }
   renderNotes();
 }
@@ -450,13 +483,13 @@ function addNote() {
   const text = input.value.trim();
   if (!text) return;
   const note = {id:Date.now(),section:"Nuevas",text,tag:"general",done:false};
-  if (panel==="personal") { pNotes=[note,...pNotes]; localStorage.setItem("fx_pn",JSON.stringify(pNotes)); }
-  else { bNotes=[note,...bNotes]; localStorage.setItem("fx_bn",JSON.stringify(bNotes)); }
+  if (panel==="personal") { pNotes=[note,...pNotes]; }
+  else { bNotes=[note,...bNotes]; }
   input.value="";
   renderNotes();
 }
 
-// ── Load Data from API ────────────────────────────────
+// ── Load Data (muestra mensaje que hay que actualizar desde Claude) ──
 async function loadData() {
   const btn = document.getElementById("refreshBtn");
   const icon = document.getElementById("spinIcon");
@@ -465,41 +498,9 @@ async function loadData() {
   icon.classList.add("spinning");
   label.textContent = "Actualizando...";
 
-  try {
-    const res = await fetch("/.netlify/functions/data");
-    if (!res.ok) throw new Error("API error");
-    const json = await res.json();
-    data = {
-      personalEmails: json.personalEmails || [],
-      bosanetEmails:  json.bosanetEmails  || [],
-      events:         json.events          || [],
-      summary:        json.summary         || ""
-    };
-    if (data.summary) {
-      document.getElementById("summaryBar").style.display = "block";
-      document.getElementById("summaryText").textContent = data.summary;
-    }
-  } catch {
-    // fallback static data
-    data = {
-      personalEmails: [
-        {from:"Google",subject:"Security alert – Claude Calendar",time:"1:10 PM",unread:true},
-        {from:"The New York Times",subject:"The Morning: Killing Iran's leader",time:"1:01 PM",unread:true},
-        {from:"Uber Receipts",subject:"Saturday evening trip – $67.43",time:"12:19 PM",unread:true},
-        {from:"Vineyard Vines",subject:"You Will *Love* These Bestselling Favorites",time:"7:17 AM",unread:false},
-      ],
-      bosanetEmails: [
-        {from:"Dusty Gilvin · Cantor",subject:"Quick Intro at Expo West",time:"1:21 PM",unread:true},
-        {from:"Cantor (reenvío)",subject:"FW- Quick Intro at Expo West",time:"1:31 PM",unread:true},
-        {from:"QuickBooks / Intuit",subject:"Line of Credit payment coming due",time:"1:21 PM",unread:false},
-      ],
-      events: [
-        {day:3,dayName:"Mar",title:"✈️ Flight to LAX (B6 2801)",time:"9:10 AM → 3:09 PM"},
-        {day:6,dayName:"Mar",title:"✈️ Flight to FLL (B6 700)",time:"6:00 PM → 10:48 PM"},
-      ],
-      summary:""
-    };
-  }
+  // Los emails ya están cargados (datos reales inyectados por Claude)
+  // Para actualizar en tiempo real, abre Claude y pide "actualizar dashboard"
+  await new Promise(r => setTimeout(r, 800));
 
   renderAll();
   const t = new Date();
@@ -507,7 +508,6 @@ async function loadData() {
   icon.classList.remove("spinning");
   btn.disabled = false;
 }
-
 
 // ── Payment Tracker ───────────────────────────────────
 var PAY_FILTER = 'all';
@@ -565,7 +565,6 @@ function filterPay(btn, f) {
 }
 
 function renderPay(serverExpenses) {
-  // Use server data from Gmail/Excel if available, otherwise use local PAGOS
   var source = PAGOS;
   if (serverExpenses && serverExpenses.length > 0) {
     source = serverExpenses.map(function(e) {
@@ -602,7 +601,6 @@ function renderPay(serverExpenses) {
   });
 
   var cls = {paid:'bp bp-paid', late:'bp bp-late', today:'bp bp-today', soon:'bp bp-soon', ok:'bp bp-ok', pend:'bp bp-pend'};
-  var ico = {paid:'', late:'', today:'', soon:'', ok:'', pend:''};
 
   document.getElementById('payBody').innerHTML = rows.map(function(r) {
     var p = r.p, s = r.s;
@@ -616,7 +614,8 @@ function renderPay(serverExpenses) {
 buildCal([]);
 renderNotes();
 renderPay(null);
-loadData();
+renderEmails();
+renderEvents();
 </script>
 </body>
 </html>
